@@ -74,7 +74,7 @@ To set up the plugin for development, you can follow these steps:
 # setup the umbrella project for the RabbitMQ ecosystem
 $ git clone https://github.com/rabbitmq/rabbitmq-public-umbrella
 $ cd rabbitmq-public-umbrella
-$ make checkout
+$ make co
 $ make
 
 # clone the plugin for development
