@@ -13,7 +13,10 @@ copy of the message into your queue/exchange even if multiple bindings
 match.
 
 It's backed by the same logic used by the direct exchange, just with
-support for delimiters, so it should scale in roughly the same way.
+support for delimiters. Performance tests with the official RabbitMQ
+[benchmarking tool](https://github.com/rabbitmq/rabbitmq-perf-test)
+show almost exactly the same throughput as direct exchanges (with
+the same number of total matching bindings).
 
 ## How It Works
 
