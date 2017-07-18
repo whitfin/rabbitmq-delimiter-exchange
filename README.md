@@ -61,14 +61,15 @@ The [RabbitMQ documentation](https://www.rabbitmq.com/installing-plugins.html)
 explains how to install plugins into your server application. Each plugin is
 packaged as a .ez file; you can download the latest "final" archive from the
 [releases](https://github.com/whitfin/rabbitmq-delimiter-exchange/releases)
-page on GitHub, or build it yourself using `make dist` (see below).
+page on GitHub, or build it yourself directly from source. To do so you don't
+need to clone the RabbitMQ umbrella; just clone this repository and run the
+`make dist` build task.
 
 ## Development
 
-To work on this plugin (and plugins in general), you should use the public
-RabbitMQ umbrella project found [here](https://github.com/rabbitmq/rabbitmq-public-umbrella).
-
-To set up the plugin for development, you can follow these steps:
+To work on this plugin (and plugins in general), you should use the RabbitMQ
+[umbrella project](https://github.com/rabbitmq/rabbitmq-public-umbrella). To
+set up the plugin for development, you can follow these steps:
 
 ```bash
 # setup the umbrella project for the RabbitMQ ecosystem
