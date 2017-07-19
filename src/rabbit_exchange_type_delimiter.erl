@@ -79,6 +79,6 @@ assert_args_equivalence(X, Args) ->
 split_routes([], Routes) ->
     Routes;
 split_routes([<<Delim:1/binary, Route/binary>> | RKeys], Routes) ->
-    split_routes(RKeys, binary:split(Route, Delim) ++ Routes);
+    split_routes(RKeys, binary:split(Route, Delim, [global]) ++ Routes);
 split_routes([Route | RKeys], Routes) ->
     split_routes(RKeys, [Route | Routes]).
