@@ -18,9 +18,9 @@
 %% re-use the existing tables to reduce memory and boilerplate.
 
 -module(rabbit_exchange_type_delimiter).
--include_lib("rabbit_common/include/rabbit.hrl").
-
 -behaviour(rabbit_exchange_type).
+
+-include_lib("rabbit_common/include/rabbit.hrl").
 
 -export([description/0, serialise_events/0, route/2]).
 -export([info/1, info/2, validate/1, validate_binding/2,

@@ -1,12 +1,13 @@
 PROJECT = rabbitmq_delimiter_exchange
 PROJECT_DESCRIPTION = RabbitMQ Delimiter Exchange Type
 PROJECT_MOD = rabbitmq_delimiter_exchange
+PROJECT_VERSION := 1.0.0
 
 DEPS = rabbit_common
-TEST_DEPS = rabbitmq_ct_helpers rabbitmq_ct_client_helpers amqp_client
-
 DEP_EARLY_PLUGINS = rabbit_common/mk/rabbitmq-early-plugin.mk
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-plugin.mk
+RABBITMQ_COMMIT ?= master
 
-include rabbitmq-components.mk
+dep_rabbit_common = git https://github.com/rabbitmq/rabbitmq-common $(RABBITMQ_COMMIT)
+
 include erlang.mk
