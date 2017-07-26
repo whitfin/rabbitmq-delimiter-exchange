@@ -8,8 +8,9 @@
 /doc/
 /ebin/
 /logs/
+/node_modules/
 /plugins/
-/xrefr
+/xrefr/
 .tool-versions
 .tool-versions-e
 erlang.mk

@@ -1,0 +1,25 @@
+{
+  "name": "rabbitmq-delimiter-exchange",
+  "version": "1.0.0",
+  "description": "RabbitMQ exchange with support for multiple routing keys per message",
+  "private": true,
+  "scripts": {
+    "test": "mocha -b -R spec -u tdd test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whitfin/rabbitmq-delimiter-exchange.git"
+  },
+  "author": "Isaac Whitfield",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/whitfin/rabbitmq-delimiter-exchange/issues"
+  },
+  "homepage": "https://github.com/whitfin/rabbitmq-delimiter-exchange#readme",
+  "devDependencies": {
+    "amqplib": "^0.5.1",
+    "async": "^2.5.0",
+    "mocha": "^3.4.2",
+    "should": "^11.2.1"
+  }
+}
