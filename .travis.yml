@@ -7,16 +7,12 @@ otp_release:
   - 18.3
   - 17.5
 services:
-  - rabbitmq
+  - docker
 install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)" < /dev/null; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"; fi
-  - brew install make
-  - make dist
-  - sudo cp plugins/rabbitmq_delimiter_exchange-*.ez /usr/lib/rabbitmq/lib/$(ls /usr/lib/rabbitmq/lib/ | head -n 1)/plugins
-  - sudo rabbitmq-plugins enable rabbitmq_delimiter_exchange
-  - sudo service rabbitmq-server restart
+  - npm install
+  - docker build -t rabbit_delimiter .
+before_script:
+  - docker run -d -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest -p 5672:5672 -p 15672:15672 rabbit_delimiter
+  - ./bin/wait-for-success curl --output /dev/null --silent --head --fail http://localhost:15672
 script:
   - npm test

@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# Stupid little script to execute a shell command
+# passed in via ARGV until it succeeds. Used by
+# the CI loop in order to poll for services.
+while true
+  if system("#{ARGV * ' '} > /dev/null 2>&1")
+    exit 0
+  end
+  sleep 1
+end

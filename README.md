@@ -1,4 +1,4 @@
-# RabbitMQ Delimiter Exchange Type
+# RabbitMQ Delimiter Exchange Type [![Build Status](https://img.shields.io/travis/whitfin/rabbitmq-delimiter-exchange.svg?label=unix)](https://travis-ci.org/whitfin/rabbitmq-delimiter-exchange)
 
 ## What It Does
 
