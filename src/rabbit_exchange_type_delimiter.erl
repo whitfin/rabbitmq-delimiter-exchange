@@ -46,8 +46,10 @@ route(#exchange{name = Name},
       % list, splitting our delimited routes as necessary and then forward our new key list through
       % to the same implementation backing the direct exchange in order to gain performance via ETS.
       #delivery{message = #basic_message{routing_keys = Routes}}) ->
-    RKeys = split_routes(Routes, []),
-    rabbit_router:match_routing_key(Name, RKeys).
+    case split_routes(Routes, []) of
+        []    -> [];
+        RKeys -> rabbit_router:match_routing_key(Name, RKeys)
+    end.
 
 serialise_events() -> false.
 
@@ -80,5 +82,5 @@ split_routes([], Routes) ->
     Routes;
 split_routes([<<Delim:1/binary, Route/binary>> | RKeys], Routes) ->
     split_routes(RKeys, binary:split(Route, Delim, [global]) ++ Routes);
-split_routes([Route | RKeys], Routes) ->
-    split_routes(RKeys, [Route | Routes]).
+split_routes([_Route | RKeys], Routes) ->
+    split_routes(RKeys, Routes).
