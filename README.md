@@ -63,7 +63,8 @@ packaged as a .ez file; you can download the latest "final" archive from the
 [releases](https://github.com/whitfin/rabbitmq-delimiter-exchange/releases)
 page on GitHub, or build it yourself directly from source. To do so you don't
 need to clone the RabbitMQ umbrella; just clone this repository and run the
-`make dist` build task.
+`make dist` build task. Building outside of the repository requires that you
+define the `rabbit_common` version via the `$RABBITMQ_REF` variable.
 
 ## Development
 
@@ -81,7 +82,8 @@ $ make
 # clone the plugin for development
 $ cd deps
 $ git clone https://github.com/whitfin/rabbitmq-delimiter-exchange
-$ cd rabbitmq-delimiter-exchange
+$ mv rabbitmq-delimiter-exchange rabbitmq_delimiter_exchange
+$ cd rabbitmq_delimiter_exchange
 
 # build the plugin
 $ make
