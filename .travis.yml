@@ -1,0 +1,22 @@
+sudo: required
+language: elixir
+elixir:
+  - 1.4.5
+otp_release:
+  - 19.3
+  - 18.3
+  - 17.5
+services:
+  - rabbitmq
+install:
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)" < /dev/null; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"; fi
+  - brew install make
+  - make dist
+  - sudo cp plugins/rabbitmq_delimiter_exchange-*.ez /usr/lib/rabbitmq/lib/$(ls /usr/lib/rabbitmq/lib/ | head -n 1)/plugins
+  - sudo rabbitmq-plugins enable rabbitmq_delimiter_exchange
+  - sudo service rabbitmq-server restart
+script:
+  - npm test
