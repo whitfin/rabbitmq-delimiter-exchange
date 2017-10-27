@@ -1,4 +1,5 @@
-FROM rabbitmq:3.6.12
+ARG  RABBIT_VSN=latest
+FROM rabbitmq:${RABBIT_VSN}
 
 ADD . rabbitmq-delimiter-exchange
 ENV LANG=C.UTF-8

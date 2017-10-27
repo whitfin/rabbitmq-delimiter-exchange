@@ -59,13 +59,9 @@ exchange. If you see any incompatibility, please file an issue.
 
 The [RabbitMQ documentation](https://www.rabbitmq.com/installing-plugins.html)
 explains how to install plugins into your server application. Each plugin is
-packaged as a .ez file; you can download the latest "final" archive from the
-[releases](https://github.com/whitfin/rabbitmq-delimiter-exchange/releases)
-page on GitHub, or build it yourself directly from source. To do so you don't
-need to clone the RabbitMQ umbrella; just clone this repository and run the
-`make dist` build task. Building outside of the umbrella requires that you
-define the `rabbit_common` version via the `$RABBIT_VSN` variable (it will
-default to using the master branch of `rabbit_common`).
+packaged as a .ez file; you build it yourself directly from source. To do so
+you don't need to clone the RabbitMQ umbrella; just clone this repository and
+run the `make dist` build task from the correct branch/tag.
 
 ## Development
 

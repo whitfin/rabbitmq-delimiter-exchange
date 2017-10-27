@@ -19,3 +19,17 @@ script:
   - npm test
 after_failure:
   - docker logs rabbit
+env:
+  - RABBIT_VSN=3.6.12
+  - RABBIT_VSN=3.6.11
+  - RABBIT_VSN=3.6.10
+  - RABBIT_VSN=3.6.9
+  - RABBIT_VSN=3.6.8
+  - RABBIT_VSN=3.6.7
+  - RABBIT_VSN=3.6.6
+  - RABBIT_VSN=3.6.5
+  - RABBIT_VSN=3.6.4
+  - RABBIT_VSN=3.6.3
+  - RABBIT_VSN=3.6.2
+  - RABBIT_VSN=3.6.1
+  - RABBIT_VSN=3.6.0
