@@ -1,13 +1,15 @@
 PROJECT = rabbitmq_delimiter_exchange
 PROJECT_DESCRIPTION = RabbitMQ Delimiter Exchange Type
-PROJECT_MOD = rabbitmq_delimiter_exchange
-PROJECT_VERSION := 1.0.0
 
 DEPS = rabbit_common
-DEP_EARLY_PLUGINS = rabbit_common/mk/rabbitmq-early-plugin.mk
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-plugin.mk
-RABBITMQ_REF ?= master
+DEP_EARLY_PLUGINS = rabbit_common/mk/rabbitmq-early-plugin.mk
 
-dep_rabbit_common = git https://github.com/rabbitmq/rabbitmq-common $(RABBITMQ_REF)
+# FIXME: Use erlang.mk patched for RabbitMQ, while waiting for PRs to be
+# reviewed and merged.
 
+ERLANG_MK_REPO = https://github.com/rabbitmq/erlang.mk.git
+ERLANG_MK_COMMIT = rabbitmq-tmp
+
+include rabbitmq-components.mk
 include erlang.mk

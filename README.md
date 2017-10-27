@@ -63,8 +63,9 @@ packaged as a .ez file; you can download the latest "final" archive from the
 [releases](https://github.com/whitfin/rabbitmq-delimiter-exchange/releases)
 page on GitHub, or build it yourself directly from source. To do so you don't
 need to clone the RabbitMQ umbrella; just clone this repository and run the
-`make dist` build task. Building outside of the repository requires that you
-define the `rabbit_common` version via the `$RABBITMQ_REF` variable.
+`make dist` build task. Building outside of the umbrella requires that you
+define the `rabbit_common` version via the `$RABBIT_VSN` variable (it will
+default to using the master branch of `rabbit_common`).
 
 ## Development
 

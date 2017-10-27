@@ -1,18 +1,14 @@
 sudo: required
-language: elixir
-elixir:
-  - 1.4.5
-otp_release:
-  - 19.3
-  - 18.3
-  - 17.5
-services:
-  - docker
+language: generic
+branches:
+  only:
+  - stable
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
+  - git checkout stable
 install:
   - npm install
   - docker build -t rabbit_delimiter .
