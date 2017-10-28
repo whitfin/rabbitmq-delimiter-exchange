@@ -61,7 +61,9 @@ The [RabbitMQ documentation](https://www.rabbitmq.com/installing-plugins.html)
 explains how to install plugins into your server application. Each plugin is
 packaged as a .ez file; you build it yourself directly from source. To do so
 you don't need to clone the RabbitMQ umbrella; just clone this repository and
-run the `make dist` build task from the correct branch/tag.
+run the `make dist` build task from the correct branch/tag. You should build
+from the stable branch unless you have reason to do otherwise. This plugin
+targets RabbitMQ 3.6.0 and later versions.
 
 ## Development
 
