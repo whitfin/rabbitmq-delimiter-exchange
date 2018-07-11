@@ -20,11 +20,15 @@ script:
 after_failure:
   - docker logs rabbit
 env:
+  - RABBIT_VSN=3.7.7
+  - RABBIT_VSN=3.7.6
+  - RABBIT_VSN=3.7.5
   - RABBIT_VSN=3.7.4
   - RABBIT_VSN=3.7.3
   - RABBIT_VSN=3.7.2
   - RABBIT_VSN=3.7.1
   - RABBIT_VSN=3.7.0
+  - RABBIT_VSN=3.6.16
   - RABBIT_VSN=3.6.15
   - RABBIT_VSN=3.6.14
   - RABBIT_VSN=3.6.13
