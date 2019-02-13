@@ -11,7 +11,7 @@ before_install:
   - git checkout stable
 install:
   - npm install
-  - docker build --build-arg RABBIT_VSN=$RABBIT_VSN -t rabbit_delimiter .
+  - docker build -t rabbit_delimiter .
 before_script:
   - docker run -d -p 5672:5672 -p 15672:15672 --name rabbit rabbit_delimiter
   - ./bin/wait-for-success curl -o /dev/null -sIf http://localhost:15672
@@ -19,33 +19,3 @@ script:
   - npm test
 after_failure:
   - docker logs rabbit
-env:
-  - RABBIT_VSN=3.7.11
-  - RABBIT_VSN=3.7.10
-  - RABBIT_VSN=3.7.9
-  - RABBIT_VSN=3.7.8
-  - RABBIT_VSN=3.7.7
-  - RABBIT_VSN=3.7.6
-  - RABBIT_VSN=3.7.5
-  - RABBIT_VSN=3.7.4
-  - RABBIT_VSN=3.7.3
-  - RABBIT_VSN=3.7.2
-  - RABBIT_VSN=3.7.1
-  - RABBIT_VSN=3.7.0
-  - RABBIT_VSN=3.6.16
-  - RABBIT_VSN=3.6.15
-  - RABBIT_VSN=3.6.14
-  - RABBIT_VSN=3.6.13
-  - RABBIT_VSN=3.6.12
-  - RABBIT_VSN=3.6.11
-  - RABBIT_VSN=3.6.10
-  - RABBIT_VSN=3.6.9
-  - RABBIT_VSN=3.6.8
-  - RABBIT_VSN=3.6.7
-  - RABBIT_VSN=3.6.6
-  - RABBIT_VSN=3.6.5
-  - RABBIT_VSN=3.6.4
-  - RABBIT_VSN=3.6.3
-  - RABBIT_VSN=3.6.2
-  - RABBIT_VSN=3.6.1
-  - RABBIT_VSN=3.6.0

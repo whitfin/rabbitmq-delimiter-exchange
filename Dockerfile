@@ -1,9 +1,7 @@
-ARG  RABBIT_VSN=latest
-FROM rabbitmq:${RABBIT_VSN} as build
+FROM rabbitmq:latest as build
 
 # set the environment
 ENV LANG=C.UTF-8
-ENV RABBITMQ_VERSION=${RABBIT_VSN}
 
 # install needed build tools
 RUN apt-get -y update
@@ -14,6 +12,7 @@ RUN apt-get -y install \
         git \
         make \
         python \
+        rsync \
         zip
 
 # change work directory
@@ -28,7 +27,7 @@ RUN make dist
 RUN cp plugins/rabbitmq_delimiter_exchange-*.ez /tmp/
 
 # same image, different fs
-FROM rabbitmq:${RABBIT_VSN}
+FROM rabbitmq:latest
 
 # copy the built plugin from the other phase through to this phase
 COPY --from=build /tmp/rabbitmq_delimiter_exchange-*.ez ./plugins/
