@@ -50,7 +50,6 @@ dep_rabbitmq_auth_backend_ldap        = git_rmq rabbitmq-auth-backend-ldap $(cur
 dep_rabbitmq_auth_mechanism_ssl       = git_rmq rabbitmq-auth-mechanism-ssl $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_aws                      = git_rmq rabbitmq-aws $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_boot_steps_visualiser    = git_rmq rabbitmq-boot-steps-visualiser $(current_rmq_ref) $(base_rmq_ref) master
-dep_rabbitmq_clusterer                = git_rmq rabbitmq-clusterer $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_cli                      = git_rmq rabbitmq-cli $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_codegen                  = git_rmq rabbitmq-codegen $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_consistent_hash_exchange = git_rmq rabbitmq-consistent-hash-exchange $(current_rmq_ref) $(base_rmq_ref) master
@@ -70,7 +69,6 @@ dep_rabbitmq_management               = git_rmq rabbitmq-management $(current_rm
 dep_rabbitmq_management_agent         = git_rmq rabbitmq-management-agent $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_management_exchange      = git_rmq rabbitmq-management-exchange $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_management_themes        = git_rmq rabbitmq-management-themes $(current_rmq_ref) $(base_rmq_ref) master
-dep_rabbitmq_management_visualiser    = git_rmq rabbitmq-management-visualiser $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_message_timestamp        = git_rmq rabbitmq-message-timestamp $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_metronome                = git_rmq rabbitmq-metronome $(current_rmq_ref) $(base_rmq_ref) master
 dep_rabbitmq_mqtt                     = git_rmq rabbitmq-mqtt $(current_rmq_ref) $(base_rmq_ref) master
@@ -110,14 +108,14 @@ dep_rabbitmq_public_umbrella          = git_rmq rabbitmq-public-umbrella $(curre
 # all projects use the same versions. It avoids conflicts and makes it
 # possible to work with rabbitmq-public-umbrella.
 
-dep_cowboy = hex 1.0.4
-dep_ranch = hex 1.3.2
-dep_recon = hex 2.3.2
-
-# Last commit of PropEr supporting Erlang R16B03.
-dep_proper_commit = 735d972758d8bd85b12483626fe1b66450d6a6fe
-# Last commit of sockjs support Erlang R16B03 and 17.x.
-dep_sockjs = git https://github.com/rabbitmq/sockjs-erlang.git 5af2b588c812c318b19bc105b577a759c71c3e0a
+dep_cowboy = hex 2.6.1
+dep_cowlib = hex 2.7.0
+dep_jsx = hex 2.9.0
+dep_lager = hex 3.6.5
+dep_ra = git https://github.com/rabbitmq/ra.git master
+dep_ranch = hex 1.7.1
+dep_recon = hex 2.3.6
+dep_sysmon_handler = hex 1.1.0
 
 RABBITMQ_COMPONENTS = amqp_client \
 		      amqp10_common \
@@ -132,7 +130,6 @@ RABBITMQ_COMPONENTS = amqp_client \
 		      rabbitmq_auth_mechanism_ssl \
 		      rabbitmq_aws \
 		      rabbitmq_boot_steps_visualiser \
-		      rabbitmq_clusterer \
 		      rabbitmq_cli \
 		      rabbitmq_codegen \
 		      rabbitmq_consistent_hash_exchange \
@@ -152,7 +149,6 @@ RABBITMQ_COMPONENTS = amqp_client \
 		      rabbitmq_management_agent \
 		      rabbitmq_management_exchange \
 		      rabbitmq_management_themes \
-		      rabbitmq_management_visualiser \
 		      rabbitmq_message_timestamp \
 		      rabbitmq_metronome \
 		      rabbitmq_mqtt \
@@ -200,11 +196,17 @@ export current_rmq_ref
 
 ifeq ($(origin base_rmq_ref),undefined)
 ifneq ($(wildcard .git),)
+possible_base_rmq_ref := master
+ifeq ($(possible_base_rmq_ref),$(current_rmq_ref))
+base_rmq_ref := $(current_rmq_ref)
+else
 base_rmq_ref := $(shell \
-	(git rev-parse --verify -q stable >/dev/null && \
-	  git merge-base --is-ancestor $$(git merge-base master HEAD) stable && \
-	  echo stable) || \
+	(git rev-parse --verify -q master >/dev/null && \
+	 git rev-parse --verify -q $(possible_base_rmq_ref) >/dev/null && \
+	 git merge-base --is-ancestor $$(git merge-base master HEAD) $(possible_base_rmq_ref) && \
+	 echo $(possible_base_rmq_ref)) || \
 	echo master)
+endif
 else
 base_rmq_ref := master
 endif
@@ -224,7 +226,7 @@ export base_rmq_ref
 # If cloning from this computed location fails, we fallback to RabbitMQ
 # upstream which is GitHub.
 
-# Maccro to transform eg. "rabbit_common" to "rabbitmq-common".
+# Macro to transform eg. "rabbit_common" to "rabbitmq-common".
 rmq_cmp_repo_name = $(word 2,$(dep_$(1)))
 
 # Upstream URL for the current project.
@@ -294,7 +296,7 @@ prepare-dist::
 	@:
 
 # --------------------------------------------------------------------
-# rabbitmq-components.mk checks.
+# Umbrella-specific settings.
 # --------------------------------------------------------------------
 
 # If this project is under the Umbrella project, we override $(DEPS_DIR)
@@ -314,25 +316,5 @@ endif
 
 ifneq ($(filter distclean distclean-deps,$(MAKECMDGOALS)),)
 SKIP_DEPS = 1
-endif
-endif
-
-UPSTREAM_RMQ_COMPONENTS_MK = $(DEPS_DIR)/rabbit_common/mk/rabbitmq-components.mk
-
-check-rabbitmq-components.mk:
-	$(verbose) cmp -s rabbitmq-components.mk \
-		$(UPSTREAM_RMQ_COMPONENTS_MK) || \
-		(echo "error: rabbitmq-components.mk must be updated!" 1>&2; \
-		  false)
-
-ifeq ($(PROJECT),rabbit_common)
-rabbitmq-components-mk:
-	@:
-else
-rabbitmq-components-mk:
-	$(gen_verbose) cp -a $(UPSTREAM_RMQ_COMPONENTS_MK) .
-ifeq ($(DO_COMMIT),yes)
-	$(verbose) git diff --quiet rabbitmq-components.mk \
-	|| git commit -m 'Update rabbitmq-components.mk' rabbitmq-components.mk
 endif
 endif
