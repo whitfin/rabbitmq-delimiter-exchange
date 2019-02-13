@@ -3,8 +3,9 @@ FROM rabbitmq:${RABBIT_VSN} as build
 
 # set the environment
 ENV LANG=C.UTF-8
+ENV RABBITMQ_VERSION=${RABBIT_VSN}
 
-# update system dependencies
+# install needed build tools
 RUN apt-get -y update
 RUN apt-get -y install \
         curl \
