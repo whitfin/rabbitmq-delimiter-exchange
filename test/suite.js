@@ -1,5 +1,4 @@
-const amqp = require('amqplib/callback_api');
-const async = require('async');
+const amqp = require('amqplib');
 const should = require('should');
 
 let _connection;
@@ -7,259 +6,202 @@ let _cleanupTasks = [];
 
 suite('RabbitMQ Delimiter Exchange', function () {
 
-    suiteSetup('start connection', function (done) {
-        amqp.connect(function (err, conn) {
-            if (err) {
-                return done(err);
-            }
+    suiteSetup('start connection', async function () {
+        _connection = await amqp.connect();
 
-            _connection = conn;
-
-            _scheduleForCleanup(function (complete) {
-                _connection.close(complete);
-            });
-
-            done();
+        _scheduleForCleanup(async function () {
+            await _connection.close();
         });
     });
 
-    test('creating an x-delimiter exchange', function (done) {
-        _createExchange(function (err, channel, exchange) {
-            if (err) {
-                return done(err);
-            }
+    test('creating an x-delimiter exchange', async function () {
+        let { name, channel } = await _createExchange();
+    });
 
-            should(channel).be.ok();
-            should(exchange).be.ok();
+    test('receiving messages matching a binding', async function () {
+        let { name, channel } = await _createExchange();
 
-            done();
+        let exchange = name;
+        let queue_name = _name();
+        let routing_key = _name();
+        let message_bytes = Buffer.from(_name());
+
+        await _createQueue(channel, queue_name);
+        await _bindQueue(channel, queue_name, exchange, routing_key);
+        await _publish(channel, exchange, _join(routing_key), message_bytes);
+        await _consume(channel, queue_name, function validate(message) {
+            should(message.content).eql(message_bytes);
         });
     });
 
-    test('receiving messages matching a binding', function (done) {
-        _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let routing_key = _name();
-            let message_bytes = Buffer.from(_name());
+    test('receiving messages matching a binding after a delimiter', async function () {
+        let { name, channel } = await _createExchange();
 
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generateBind(channel, queue_name, exchange, routing_key),
-                _generatePublish(channel, exchange, _join(routing_key), message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should(message.content).eql(message_bytes);
-                })
-            ];
+        let exchange = name;
+        let queue_name = _name();
+        let routing_key1 = _name();
+        let routing_key2 = _name();
+        let publish_key = _join(routing_key1, routing_key2);
+        let message_bytes = Buffer.from(_name());
 
-            async.series(steps, done);
+        await _createQueue(channel, queue_name);
+        await _bindQueue(channel, queue_name, exchange, routing_key2);
+        await _publish(channel, exchange, publish_key, message_bytes);
+        await _consume(channel, queue_name, function validate(message) {
+            should(message.content).eql(message_bytes);
         });
     });
 
-    test('receiving messages matching a binding after a delimiter', function (done) {
-        _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let routing_key1 = _name();
-            let routing_key2 = _name();
-            let publish_key = _join(routing_key1, routing_key2);
-            let message_bytes = Buffer.from(_name());
+    test('receiving only a single copy with multiple binding matches', async function () {
+        let { name, channel } = await _createExchange();
 
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generateBind(channel, queue_name, exchange, routing_key2),
-                _generatePublish(channel, exchange, publish_key, message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should(message.content).eql(message_bytes);
-                })
-            ];
+        let exchange = name;
+        let queue_name = _name();
+        let routing_key1 = _name();
+        let routing_key2 = _name();
+        let publish_key = _join(routing_key1, routing_key2);
+        let message_bytes = Buffer.from(_name());
 
-            async.series(steps, done);
+        await _createQueue(channel, queue_name);
+        await _bindQueue(channel, queue_name, exchange, routing_key1);
+        await _bindQueue(channel, queue_name, exchange, routing_key2);
+        await _publish(channel, exchange, publish_key, message_bytes);
+        await _consume(channel, queue_name, function validate(message) {
+            should(message.content).eql(message_bytes);
         });
     });
 
-    test('receiving only a single copy with multiple binding matches', function (done) {
-         _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let routing_key1 = _name();
-            let routing_key2 = _name();
-            let publish_key = _join(routing_key1, routing_key2);
-            let message_bytes = Buffer.from(_name());
+    test('splitting on the delimiter runs a global scan', async function () {
+        let { name, channel } = await _createExchange();
 
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generateBind(channel, queue_name, exchange, routing_key1),
-                _generateBind(channel, queue_name, exchange, routing_key2),
-                _generatePublish(channel, exchange, publish_key, message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should(message.content).eql(message_bytes);
-                })
-            ];
+        let exchange = name;
+        let queue_name = _name();
+        let routing_key1 = _name();
+        let routing_key2 = _name();
+        let routing_key3 = _name();
+        let publish_key = _join(routing_key1, routing_key2, routing_key3);
+        let message_bytes = Buffer.from(_name());
 
-            async.series(steps, done);
-         });
+        await _createQueue(channel, queue_name);
+        await _bindQueue(channel, queue_name, exchange, routing_key3);
+        await _publish(channel, exchange, publish_key, message_bytes);
+        await _consume(channel, queue_name, function validate(message) {
+            should(message.content).eql(message_bytes);
+        });
     });
 
-    test('splitting on the delimiter runs a global scan', function (done) {
-         _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let routing_key1 = _name();
-            let routing_key2 = _name();
-            let routing_key3 = _name();
-            let publish_key = _join(routing_key1, routing_key2, routing_key3);
-            let message_bytes = Buffer.from(_name());
+    test('treating a trailing delimiter as an empty routing match', async function () {
+        let { name, channel } = await _createExchange();
 
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generateBind(channel, queue_name, exchange, routing_key3),
-                _generatePublish(channel, exchange, publish_key, message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should(message.content).eql(message_bytes);
-                })
-            ];
+        let exchange = name;
+        let queue_name = _name();
+        let message_bytes = Buffer.from(_name());
 
-            async.series(steps, done);
-         });
+        await _createQueue(channel, queue_name);
+        await _bindQueue(channel, queue_name, exchange, '');
+        await _publish(channel, exchange, ':', message_bytes);
+        await _consume(channel, queue_name, function validate(message) {
+            should(message.content).eql(message_bytes);
+        });
     });
 
-    test('treating a trailing delimiter as an empty routing match', function (done) {
-        _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let message_bytes = Buffer.from(_name());
+    test('gracefully failing when no routing key is provided', async function () {
+        let { name, channel } = await _createExchange();
 
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generateBind(channel, queue_name, exchange, ''),
-                _generatePublish(channel, exchange, ':', message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should(message.content).eql(message_bytes);
-                })
-            ];
+        let exchange = name;
+        let queue_name = _name();
+        let message_bytes = Buffer.from(_name());
 
-            async.series(steps, done);
-         });
+        await _createQueue(channel, queue_name);
+        await _bindQueue(channel, queue_name, exchange, '');
+        await _publish(channel, exchange, '', message_bytes);
+        await _consume(channel, queue_name, function validate() {
+            should.fail('Message should never be received!');
+        }, true);
     });
 
-    test('gracefully failing when no routing key is provided', function (done) {
-        _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let message_bytes = Buffer.from(_name());
+    test('gracefully failing when no bindings match the routing key', async function () {
+        let { name, channel } = await _createExchange();
 
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generateBind(channel, queue_name, exchange, ''),
-                _generatePublish(channel, exchange, '', message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should.fail('Message should never be received!');
-                }, true)
-            ];
+        let exchange = name;
+        let queue_name = _name();
+        let routing_key = _name();
+        let message_bytes = Buffer.from(_name());
 
-            async.series(steps, done);
-         });
+        await _createQueue(channel, queue_name);
+        await _publish(channel, exchange, _join(routing_key), message_bytes);
+        await _consume(channel, queue_name, function validate() {
+            should.fail('Message should never be received!');
+        }, true);
     });
 
-    test('gracefully failing when no bindings match the routing key', function (done) {
-        _createExchange(function (err, channel, exchange) {
-            let queue_name = _name();
-            let routing_key = _name();
-            let message_bytes = Buffer.from(_name());
-
-            let steps = [
-                _generateQueue(channel, queue_name),
-                _generatePublish(channel, exchange, _join(routing_key), message_bytes),
-                _generateConsume(channel, queue_name, function validate(message) {
-                    should.fail('Message should never be received!');
-                }, true)
-            ];
-
-            async.series(steps, done);
-         });
-    });
-
-    suiteTeardown('close connection', function (done) {
-        async.eachSeries(_cleanupTasks, function (task, next) {
-            task(next);
-        }, done);
+    suiteTeardown('close connection', async function () {
+        for (let task of _cleanupTasks) {
+            await task();
+        }
     });
 
 });
 
 /* Private helpers */
 
-function _createExchange(handler) {
-    _connection.createChannel(function (err, channel) {
-        if (err) {
-            return handler(err);
-        }
+async function _bindQueue(channel, queue, exchange, key) {
+    await channel.bindQueue(queue, exchange, key, {});
+}
 
-        _scheduleForCleanup(function (complete) {
-            channel.close(complete);
-        });
+async function _createExchange() {
+    let channel = await _connection.createChannel();
 
-        let exchange_name = _name();
+    _scheduleForCleanup(async function () {
+        await channel.close();
+    });
 
-        channel.assertExchange(exchange_name, 'x-delimiter', {}, function (err, ok) {
-            if (err) {
-                return handler(err);
-            }
+    let name = _name();
+    let result = await channel.assertExchange(name, 'x-delimiter', {});
 
-            should(ok).be.an.Object();
-            should(ok).have.property('exchange');
-            should(ok.exchange).eql(exchange_name);
+    should(result).be.an.Object();
+    should(result).have.property('exchange');
+    should(result.exchange).eql(name);
 
-            _scheduleForCleanup(function (completed) {
-                channel.deleteExchange(exchange_name, {}, completed);
+    _scheduleForCleanup(async function () {
+        return channel.deleteExchange(name, {});
+    });
+
+    return { name, channel };
+}
+
+async function _createQueue(channel, queue) {
+    let result = await channel.assertQueue(queue, { durable: false });
+
+    should(result).be.an.Object();
+    should(result).have.property('queue');
+    should(result.queue).eql(queue);
+}
+
+async function _consume(channel, queue, validator, exit) {
+    return new Promise(function (resolve, reject) {
+        channel
+            .consume(queue, function (message) {
+                validator(message);
+                resolve();
+            }, {})
+            .then(function (result) {
+                try {
+                    should(result).be.an.Object();
+                    should(result).have.property('consumerTag');
+                } catch (err) {
+                    reject(err);
+                }
+                exit && resolve();
+            })
+            .catch(function (err) {
+                reject(err);
             });
-
-            handler(undefined, channel, exchange_name);
-        });
     });
 }
 
-function _generateBind(channel, queue, exchange, key) {
-    return function bind(next) {
-        channel.bindQueue(queue, exchange, key, {}, next);
-    };
-}
-
-function _generateConsume(channel, queue, validator, exit) {
-    return function consume(next) {
-        channel.consume(
-            queue,
-            function (message) {
-                validator(message);
-                next();
-            },
-            {},
-            function (err, ok) {
-                if (err) {
-                    return next(err);
-                }
-                should(ok).be.an.Object();
-                should(ok).have.property('consumerTag');
-                exit && process.nextTick(next);
-            }
-        );
-    };
-}
-
-function _generateQueue(channel, queue) {
-    return function create(next) {
-        channel.assertQueue(queue, { durable: false }, function (err, ok) {
-            if (err) {
-                return next(err);
-            }
-            should(ok).be.an.Object();
-            should(ok).have.property('queue');
-            should(ok.queue).eql(queue);
-            next();
-        });
-    };
-}
-
-function _generatePublish(channel, exchange, key, message) {
-    return function publish(next) {
-        channel.publish(exchange, key, message, {});
-        next();
-    };
+async function _publish(channel, exchange, key, message) {
+    await channel.publish(exchange, key, message, {});
 }
 
 function _join() {
