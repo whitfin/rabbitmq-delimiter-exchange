@@ -1,4 +1,4 @@
-FROM rabbitmq:latest as build
+FROM elixir:1.8.2 as build
 
 # set the environment
 ENV LANG=C.UTF-8
@@ -7,8 +7,6 @@ ENV LANG=C.UTF-8
 RUN apt-get -y update
 RUN apt-get -y install \
         curl \
-        erlang-dev \
-        erlang-src \
         git \
         make \
         python \
@@ -16,8 +14,8 @@ RUN apt-get -y install \
         zip
 
 # change work directory
-ADD . rabbitmq-delimiter-exchange
-WORKDIR rabbitmq-delimiter-exchange
+ADD . /rabbitmq-delimiter-exchange
+WORKDIR /rabbitmq-delimiter-exchange
 
 # package
 RUN make

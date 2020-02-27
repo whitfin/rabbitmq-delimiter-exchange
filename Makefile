@@ -1,7 +1,7 @@
 PROJECT = rabbitmq_delimiter_exchange
 PROJECT_DESCRIPTION = RabbitMQ Delimiter Exchange Type
 
-DEPS = rabbit_common
+DEPS = rabbit_common rabbit
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-plugin.mk
 DEP_EARLY_PLUGINS = rabbit_common/mk/rabbitmq-early-plugin.mk
 
