@@ -17,9 +17,8 @@
   },
   "homepage": "https://github.com/whitfin/rabbitmq-delimiter-exchange#readme",
   "devDependencies": {
-    "amqplib": "0.5.3",
-    "async": "2.6.2",
-    "mocha": "5.2.0",
+    "amqplib": "0.5.5",
+    "mocha": "7.1.0",
     "should": "13.2.3"
   }
 }
