@@ -1,4 +1,4 @@
-FROM elixir:1.8.2 as build
+FROM elixir:latest as build
 
 # set the environment
 ENV LANG=C.UTF-8
