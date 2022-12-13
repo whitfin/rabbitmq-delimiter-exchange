@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        run: |
+          cat Dockerfile.build Dockerfile.service | docker build -t plugin_test -f - .
+          docker network create test_network
+          docker run --rm -d --name rabbit --net test_network -p 5672:5672 -p 15672:15672 plugin_test
+          docker run --rm -v $PWD:/workdir --net test_network -w /workdir node:16-bullseye npm install
+          ./bin/wait-for-success curl -o /dev/null -sIf http://localhost:15672
+
+      - name: Run Tests
+        run: |
+          docker run --rm -v $PWD:/workdir --net test_network -w /workdir -e CLUSTER_URI=amqp://guest:guest@rabbit:5672 node:16-bullseye npm test

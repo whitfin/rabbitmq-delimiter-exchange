@@ -7,7 +7,9 @@ let _cleanupTasks = [];
 suite('RabbitMQ Delimiter Exchange', function () {
 
     suiteSetup('start connection', async function () {
-        _connection = await amqp.connect();
+        _connection = await amqp.connect(
+            process.env.CLUSTER_URI
+        );
 
         _scheduleForCleanup(async function () {
             await _connection.close();
