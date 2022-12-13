@@ -7,11 +7,15 @@
 /deps/
 /doc/
 /ebin/
+/escript/
 /logs/
 /node_modules/
 /plugins/
+/sbin/
 /xrefr/
+*.lock
 .tool-versions
 .tool-versions-e
 erlang.mk
+package-lock.json
 rabbitmq_delimiter_exchange.d

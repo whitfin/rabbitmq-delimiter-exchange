@@ -1,0 +1,18 @@
+FROM base as build
+
+ADD . /rabbitmq-delimiter-exchange
+WORKDIR /rabbitmq-delimiter-exchange
+
+RUN make && \
+    make dist
+
+FROM rabbitmq:management
+
+COPY --from=build \
+    /rabbitmq-delimiter-exchange/plugins/rabbitmq_delimiter_exchange-* \
+    ./plugins/rabbitmq_delimiter_exchange
+
+RUN rabbitmq-plugins enable --offline \
+    rabbitmq_delimiter_exchange
+
+EXPOSE 15671 15672

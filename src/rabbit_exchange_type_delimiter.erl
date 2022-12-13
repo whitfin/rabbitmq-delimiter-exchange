@@ -40,18 +40,14 @@
 description() ->
     [{description, <<"AMQP direct-style exchange, allowing for multiple routing keys per message">>}].
 
-route(Exchange,
-      % Although I would like to assume there is only a single routing key, there are many references
-      % to multiple keys in rabbit-common so here we support the full list of keys. We walk the key
-      % list, splitting our delimited routes as necessary and then forward our new key list through
-      % to the same implementation backing the direct exchange in order to gain performance via ETS.
-      Delivery = #delivery{message = #basic_message{routing_keys = Routes} = Msg}) ->
+route(#exchange{name = Name},
+      % Walk the key list, splitting our delimited routes as necessary and then forward our new key
+      % list through to the same implementation backing the direct exchange in order to gain
+      % performance via ETS. We call rabbit_router directly to stay compatible with v3.11.x.
+      #delivery{message = #basic_message{routing_keys = Routes}}) ->
     case split_routes(Routes, []) of
         []   -> [];
-        Keys ->
-            NewMessage = Msg#basic_message{routing_keys = Keys},
-            NewDelivery = Delivery#delivery{message = NewMessage},
-            rabbit_exchange_type_direct:route(Exchange, NewDelivery)
+        Keys -> rabbit_router:match_routing_key(Name, Keys)
     end.
 
 serialise_events() -> false.

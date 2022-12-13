@@ -55,42 +55,66 @@ arguments being used, so any provided are ignored. It should work with many
 versions of RabbitMQ as it's backed by the same implementation as the direct
 exchange. If you see any incompatibility, please file an issue.
 
+In v3.11.x, RabbitMQ introduced performance improvements for the base direct
+exchange type. This is currently incompatible with this plugin, due to some
+internal namespacing (it's only enabled on "direct" exchanges). I have filed
+for some customization here, but in the meantime this plugin will use the
+implementation of direct exchanges included in <= 3.10.x. Hopefully this can
+be changed in future to also see the same improvements :).
+
 ## Installation
 
 The [RabbitMQ documentation](https://www.rabbitmq.com/installing-plugins.html)
-explains how to install plugins into your server application. Each plugin is
-packaged as a .ez file; you build it yourself directly from source. To do so
-you don't need to clone the RabbitMQ umbrella; just clone this repository and
-run the `make dist` build task from the correct branch/tag. You should build
-from the stable branch unless you have reason to do otherwise. This plugin
+explains how to install plugins into your server application. Every plugin is
+packaged as either a `.ez` file or a plain directory, based on your version
+of RabbitMQ. Just build it and drop the output plugin into your server plugins
+directory.
+
+You don't need to clone the RabbitMQ umbrella project; just clone
+this repository, check out the branch you want (i.e. `v3.8.x`), and run `make`.
+If there is no existing branch for your version, just create it from `main`;
+RabbitMQ checks this version when pulling and pinning libraries. This plugin
 targets RabbitMQ 3.6.0 and later versions.
 
 ## Development
 
-To work on this plugin (and plugins in general), you should use the RabbitMQ
-[umbrella project](https://github.com/rabbitmq/rabbitmq-public-umbrella). To
-set up the plugin for development, you can follow these steps:
+This repository includes some Docker setup to make it easier to test the plugin,
+and run a server with the plugin installed. Packaging the plugin is pretty simple
+using Docker:
 
 ```bash
-# setup the umbrella project for the RabbitMQ ecosystem
-$ git clone https://github.com/rabbitmq/rabbitmq-public-umbrella
-$ cd rabbitmq-public-umbrella
-$ make co
+# build a development image with dependencies
+$ cat Dockerfile.build | \
+    docker build -t plugin_build -f - .
+
+# attach to the container
+$ docker run -it --rm \
+    -v $PWD:/opt/rabbitmq \
+    -w /opt/rabbitmq \
+    bash
+
+# build and package
 $ make
-
-# clone the plugin for development
-$ cd deps
-$ git clone https://github.com/whitfin/rabbitmq-delimiter-exchange
-$ mv rabbitmq-delimiter-exchange rabbitmq_delimiter_exchange
-$ cd rabbitmq_delimiter_exchange
-
-# build the plugin
-$ make
-
-# package the plugin
 $ make dist
-
-# run the server with the plugin enabled
-$ cd ../rabbitmq_server_release
-$ make run-broker PLUGINS='rabbitmq_delimiter_exchange'
 ```
+
+If you want to start a RabbitMQ server with this plugin enabled, you can use
+the server Dockerfile to let you run the tests against it:
+
+```bash
+# build a development image with dependencies
+$ cat Dockerfile.build Dockerfile.service | \
+    docker build -t plugin_build -f - .
+
+# start running to the container
+$ docker run -it --rm \
+    -p 15672:15672 \
+    -p 5672:5672 \
+    bash
+
+# test the plugin
+$ npm test
+```
+
+There are other ways to embed your workflow into the main server tree, but this
+seemed complicated for how simple this plugin is, so the above worked for me.

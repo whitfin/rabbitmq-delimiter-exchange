@@ -1,0 +1,28 @@
+FROM ubuntu:focal as base
+
+ENV LANG=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -y update && \
+    apt-get -y install \
+    curl \
+    git \
+    gnupg \
+    rsync \
+    wget \
+    zip
+
+RUN wget https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb && \
+    dpkg -i erlang-solutions_2.0_all.deb && \
+    rm erlang-solutions_2.0_all.deb
+
+RUN apt-get -y update && \
+    apt-get -y install \
+    elixir \
+    erlang-dev \
+    erlang-nox \
+    erlang-src \
+    libxslt-dev \
+    make \
+    python3
+
