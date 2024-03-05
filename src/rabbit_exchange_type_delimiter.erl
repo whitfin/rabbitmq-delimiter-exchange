@@ -22,9 +22,9 @@
 
 -include_lib("rabbit_common/include/rabbit.hrl").
 
--export([description/0, serialise_events/0, route/2]).
+-export([description/0, serialise_events/0, route/2, route/3]).
 -export([info/1, info/2, validate/1, validate_binding/2,
-         create/2, delete/3, policy_changed/2, add_binding/3,
+         create/2, delete/2, policy_changed/2, add_binding/3,
          remove_bindings/3, assert_args_equivalence/2]).
 
 -rabbit_boot_step({?MODULE,
@@ -40,11 +40,14 @@
 description() ->
     [{description, <<"AMQP direct-style exchange, allowing for multiple routing keys per message">>}].
 
-route(#exchange{name = Name},
-      % Walk the key list, splitting our delimited routes as necessary and then forward our new key
-      % list through to the same implementation backing the direct exchange in order to gain
-      % performance via ETS. We call rabbit_router directly to stay compatible with v3.11.x.
-      #delivery{message = #basic_message{routing_keys = Routes}}) ->
+route(Exchange, Msg) ->
+    route(Exchange, Msg, #{}).
+
+route(#exchange{name = Name}, Msg, _Opts) ->
+    % Walk the key list, splitting our delimited routes as necessary and then forward our new key
+    % list through to the same implementation backing the direct exchange in order to gain
+    % performance via ETS. We call rabbit_router directly to stay compatible with v3.11.x.
+    Routes = mc:routing_keys(Msg),
     case split_routes(Routes, []) of
         []   -> [];
         Keys -> rabbit_router:match_routing_key(Name, Keys)
@@ -61,7 +64,7 @@ info(_X, _Is) -> [].
 validate(_X) -> ok.
 validate_binding(_X, _B) -> ok.
 create(_Tx, _X) -> ok.
-delete(_Tx, _X, _Bs) -> ok.
+delete(_Tx, _X) -> ok.
 policy_changed(_X1, _X2) -> ok.
 add_binding(_Tx, _X, _B) -> ok.
 remove_bindings(_Tx, _X, _Bs) -> ok.

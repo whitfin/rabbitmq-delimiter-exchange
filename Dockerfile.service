@@ -6,7 +6,7 @@ WORKDIR /rabbitmq-delimiter-exchange
 RUN make && \
     make dist
 
-FROM rabbitmq:management
+FROM rabbitmq:3.13-management
 
 COPY --from=build \
     /rabbitmq-delimiter-exchange/plugins/rabbitmq_delimiter_exchange-* \

@@ -85,13 +85,13 @@ using Docker:
 ```bash
 # build a development image with dependencies
 $ cat Dockerfile.build | \
-    docker build -t plugin_build -f - .
+    docker build -t rabbitmq-build -f - .
 
 # attach to the container
 $ docker run -it --rm \
     -v $PWD:/opt/rabbitmq \
     -w /opt/rabbitmq \
-    bash
+    rabbitmq-build
 
 # build and package
 $ make
@@ -104,13 +104,13 @@ the server Dockerfile to let you run the tests against it:
 ```bash
 # build a development image with dependencies
 $ cat Dockerfile.build Dockerfile.service | \
-    docker build -t plugin_build -f - .
+    docker build -t rabbitmq-server -f - .
 
 # start running to the container
 $ docker run -it --rm \
     -p 15672:15672 \
     -p 5672:5672 \
-    bash
+    rabbitmq-server
 
 # test the plugin
 $ npm test
