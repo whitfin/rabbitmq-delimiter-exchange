@@ -5,7 +5,8 @@ meaningful difference between the use of `x-delimiter` exchanges and
 the `CC` header inside a `direct` exchange. The assumption is that this
 is a result of the [performance optimizations](https://www.rabbitmq.com/blog/2024/01/11/3.13-release#caveat)
 made in the v3.13 release. For this reason if you are targeting RabbitMQ
->= v3.13, I would suggest using `direct` exchanges with `CC` instead._
+with a version >= v3.13, I would suggest using `direct` exchanges with
+`CC` instead._
 
 ## What It Does
 
