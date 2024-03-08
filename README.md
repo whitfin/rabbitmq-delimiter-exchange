@@ -1,5 +1,12 @@
 # RabbitMQ Delimiter Exchange Type
 
+_Update 2024: it looks like as of RabbitMQ v3.13 there is no long any
+meaningful difference between the use of `x-delimiter` exchanges and
+the `CC` header inside a `direct` exchange. The assumption is that this
+is a result of the [performance optimizations](https://www.rabbitmq.com/blog/2024/01/11/3.13-release#caveat)
+made in the v3.13 release. For this reason if you are targeting RabbitMQ
+>= v3.13, I would suggest using `direct` exchanges with `CC` instead._
+
 ## What It Does
 
 This plugin adds an exchange type allowing for multiple routing keys
